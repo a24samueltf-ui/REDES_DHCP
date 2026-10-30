@@ -7,14 +7,17 @@ services:
       rede_wan:
         ipv4_address: 192.168.200.254  
         interface_name: eth0  
-      dhcp_lab:
-        ipv4_address: 192.168.130.254
+      rede_stark:
+        ipv4_address: 192.168.10.254
         interface_name: eth1
-      rede2:
-        ipv4_address: 192.168.140.254
+      rede_lannister:
+        ipv4_address: 192.168.11.254
         interface_name: eth2
+      rede_targaryen:
+        ipv4_address: 192.168.12.254
+        
   dnsserver:
-    build: docker/dnsserver
+    build: ./docker/dnsserver
     hostname: dnsserver
     networks: 
       dhcp_lab:
@@ -33,16 +36,20 @@ services:
   
 
   
-  cliente1:
+  bran:
     build: ./docker/cliente
-    container_name: client1
+    container_name: bran
     networks:
       dhcp_lab:
-        ipv4_address: 192.168.130.221
+        ipv4_address: 192.168.10.30
         mac_address: 02:42:ac:11:00:10  # dirección HW fija
 
     command: >
-      sh -c "dhclient -v eth0 && sleep infinity"
+      sh -c "ip addr flush dev eth0 && dhclient -v eth0 && sleep infinity"
+    cap_add:
+      - NET_ADMIN  # Permite al contenedor ejecutar dhclient
+    depends_on:
+      - kea
 
   cliente2:
     build: ./docker/cliente
@@ -52,20 +59,28 @@ services:
         ipv4_address: 192.168.130.222
 
     command: >
-      sh -c "dhclient -v eth0 && sleep infinity"
+      sh -c "ip addr flush dev eth0 && dhclient -v eth0 && sleep infinity"
+    cap_add:
+      - NET_ADMIN  # Permite al contenedor ejecutar dhclient
+    depends_on:
+      - kea
 
 networks:
-  dhcp_lab:
+  rede_stark:
     driver: bridge
     ipam:
       config:
-        - subnet: 192.168.130.0/24
-  rede2:
+        - subnet: 192.168.10.0/24
+  rede_lannister:
     driver: bridge
     ipam:
       config:
-        - subnet: 192.168.140.0/24
-
+        - subnet: 192.168.11.0/24
+  rede_targaryen:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.12.0/24
   rede_wan:
     driver: bridge
     ipam:
