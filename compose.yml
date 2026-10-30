@@ -15,7 +15,8 @@ services:
         interface_name: eth2
       rede_targaryen:
         ipv4_address: 192.168.12.254
-        
+    cap_add:
+      - NET_ADMIN           
   dnsserver:
     build: ./docker/dnsserver
     hostname: dnsserver
